@@ -1,82 +1,93 @@
-# Agent Protocol for AI-Extracted Data Cleaning
+# Multi-Agent Protocol
 
-## Global rules
+This file defines the recommended multi-agent workflow for `ai-extracted-data-cleaner`.
 
-- Preserve raw values.
-- Never silently overwrite or delete records.
-- Treat AI-extracted values as provisional until supported by source text, page/table references, or internal consistency.
-- Distinguish three categories clearly:
-  1. extraction error risk,
-  2. statistical outlier,
-  3. non-comparable experimental condition.
-- For manuscript use, do not convert flagged values into strong mechanistic claims without manual verification.
-- For sample-level literature databases, run available-case analysis but report `n` for every variable pair.
-- For correlations, Spearman is the default. Grey/de-emphasize `n < 10`; treat `n < 5` as exploratory only.
-- Outliers are not deleted by default. Use exclusion only after rule-based or source-based justification.
-- Same-paper multiple samples require paper-level sensitivity checks.
+## Principle
 
-## Review priority labels
+The dataset may be large. Do not pass the entire spreadsheet to every agent. Instead, produce compact JSON state files that contain only the information required for the next audit step.
 
-### P0 — Must check before use
+## Agent 01: Schema Agent
 
-Assign P0 when any of the following is true:
+**Input**
+- raw spreadsheet columns
+- first 5–20 sample rows
+- config/field_aliases.yaml
 
-- impossible physical value;
-- likely unit scale error;
-- conflicting duplicate;
-- missing source evidence for a conclusion-critical value;
-- high-influence record changes the sign or practical meaning of a trend;
-- suspected row shift or copied table artifact;
-- performance value mismatched with system or test condition.
+**Output**
+- state/01_schema_map.json
 
-### P1 — Should check before figure/manuscript claim
+**Responsibilities**
+- Map raw column names to canonical fields.
+- Identify unknown columns.
+- Identify missing recommended columns.
+- Flag ambiguous column mappings.
 
-Assign P1 when any of the following is true:
+## Agent 02: Unit Agent
 
-- plausible but extreme value;
-- missing key condition such as current density, voltage window, electrolyte, mass loading;
-- schema mapping ambiguity;
-- sample identity ambiguity;
-- one paper dominates a subgroup;
-- condition confounding affects comparison.
+**Input**
+- state/01_schema_map.json
+- raw numeric values and unit strings
 
-### P2 — Low-priority documentation check
+**Output**
+- state/02_unit_normalized.json
+- correction_log.csv
 
-Assign P2 when any of the following is true:
+**Responsibilities**
+- Convert recognized units to canonical units.
+- Preserve original values.
+- Record unit conversions and uncertain conversions.
 
-- minor formatting issue;
-- source page missing but value is non-critical;
-- redundant metadata missing;
-- value is retained only for descriptive statistics.
+## Agent 03: Physics Agent
 
-## Final decision labels
+**Input**
+- state/02_unit_normalized.json
+- config/validation_rules.yaml
 
-- `KEEP_MAIN`: no major risk; acceptable for main analysis.
-- `KEEP_SENSITIVITY`: plausible but should be isolated in sensitivity analysis.
-- `REVIEW_P0`: cannot support analysis until manually checked.
-- `REVIEW_P1`: usable only with caution; check before final figure/text.
-- `EXCLUDE_MAIN`: non-target record, confirmed duplicate, or confirmed invalid.
+**Output**
+- state/03_physics_flags.json
+- flagged_records.csv
 
-## Bias checks
+**Responsibilities**
+- Detect physically impossible values.
+- Detect values outside typical materials ranges.
+- Assign P0/P1/P2 severity.
 
-Always check at least:
+## Agent 04: Duplicate Agent
 
-- paper-level dominance;
-- year/journal/source missingness;
-- system/electrolyte/current-density confounding;
-- extraction confidence vs target-value relationship;
-- whether a single paper creates a correlation sign.
+**Input**
+- cleaned table
+- paper_id, sample_id, sample_name, key descriptor columns
 
-## Output discipline
+**Output**
+- state/04_duplicate_flags.json
 
-Every flagged item must include:
+**Responsibilities**
+- Detect exact duplicate sample IDs.
+- Detect duplicate paper_id + sample_name.
+- Detect near-duplicate rows based on key descriptor and target values.
 
-- `paper_id` or DOI/title;
-- `sample_id` or sample name;
-- field name;
-- raw value;
-- normalized value if available;
-- flag;
-- priority;
-- reason;
-- recommended manual check.
+## Agent 05: Review Queue Agent
+
+**Input**
+- all state JSON files
+- flagged_records.csv
+- correction_log.csv
+
+**Output**
+- secondary_review_queue.csv
+- paper_level_audit.csv
+- data_quality_report.md
+
+**Responsibilities**
+- Prioritize samples requiring original-paper verification.
+- Group risks by paper and sample.
+- Generate a readable Chinese quality-control report.
+
+## Conflict handling
+
+If a correction is high impact and uncertain, do not accept it automatically. Put it into the secondary review queue.
+
+Examples:
+- BET = 12300 m2/g: do not automatically change to 1230. Mark as P1/P0 and require source check.
+- ICE = 105%: mark P0 and require source check.
+- d002 = 3.72 with unknown unit: infer possible Å only if context supports it; otherwise flag.

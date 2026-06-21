@@ -1,0 +1,44 @@
+{
+  "agent": "unit_agent",
+  "version": "1.0.0",
+  "summary": {
+    "n_rows": 5,
+    "n_numeric_fields": 10,
+    "n_corrections": 3
+  },
+  "corrections_preview": [
+    {
+      "field": "BET_m2_g",
+      "original_value": "250000 cm2/g",
+      "cleaned_value": 25.0,
+      "correction_type": "unit_conversion",
+      "confidence": "high",
+      "reason": "cm2/g converted to m2/g",
+      "row_index": 2,
+      "paper_id": "P002",
+      "sample_id": ""
+    },
+    {
+      "field": "d002_nm",
+      "original_value": "3.72 Å",
+      "cleaned_value": 0.372,
+      "correction_type": "unit_conversion",
+      "confidence": "high",
+      "reason": "Å converted to nm",
+      "row_index": 0,
+      "paper_id": "P001",
+      "sample_id": ""
+    },
+    {
+      "field": "current_density_A_g",
+      "original_value": "100 mA/g",
+      "cleaned_value": 0.1,
+      "correction_type": "unit_conversion",
+      "confidence": "high",
+      "reason": "mA/g converted to A/g",
+      "row_index": 0,
+      "paper_id": "P001",
+      "sample_id": ""
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+paper,Sample Name,precursor,BET,d002,ID/IG,N content,O content,pore volume,loading,ICE,capacity,current density,source
+P001,HC-800,coconut shell,1200 m2/g,3.72 Å,1.12,3.1 at%,8.4 at%,0.62 cm3/g,1.1 mg/cm2,86.5%,310 mAh/g,100 mA/g,Table S1
+P001,HC-900,coconut shell,12300 m2/g,0.371 nm,1.09,2.7 at%,7.5 at%,0.58 cm3/g,1.0 mg/cm2,105%,335 mAh/g,0.1 A/g,Table S1
+P002,NPC-1,starch,250000 cm2/g,0.389 nm,4.20,12 at%,18 at%,6.5 cm3/g,,72%,410 mAh/g,0.2 A/g,Figure 3
+P002,NPC-1,starch,25 m2/g,0.389 nm,4.20,12 at%,18 at%,6.5 cm3/g,,72%,410 mAh/g,0.2 A/g,Figure 3
+P003,AC-SC,bamboo,1850 m2/g,,0.98,5 at%,15 at%,1.1 cm3/g,4.5 mg/cm2,,320 F/g,1 A/g,

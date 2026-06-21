@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FlagRecord",
+  "type": "object",
+  "required": ["row_index", "field", "risk_level", "reason", "required_action"],
+  "properties": {
+    "row_index": {"type": "integer"},
+    "sample_id": {"type": ["string", "null"]},
+    "paper_id": {"type": ["string", "null"]},
+    "field": {"type": "string"},
+    "value": {},
+    "risk_level": {"enum": ["P0", "P1", "P2"]},
+    "reason": {"type": "string"},
+    "required_action": {"type": "string"}
+  }
+}

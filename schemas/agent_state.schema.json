@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentState",
+  "type": "object",
+  "required": ["agent", "version", "summary"],
+  "properties": {
+    "agent": {"type": "string"},
+    "version": {"type": "string"},
+    "summary": {"type": "object"},
+    "records": {"type": "array"},
+    "warnings": {"type": "array"}
+  },
+  "additionalProperties": true
+}

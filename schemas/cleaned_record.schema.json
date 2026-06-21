@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CleanedRecord",
+  "type": "object",
+  "properties": {
+    "paper_id": {"type": ["string", "null"]},
+    "sample_id": {"type": ["string", "null"]},
+    "sample_name": {"type": ["string", "null"]},
+    "BET_m2_g": {"type": ["number", "null"]},
+    "d002_nm": {"type": ["number", "null"]},
+    "ID_IG": {"type": ["number", "null"]},
+    "ICE_pct": {"type": ["number", "null"]},
+    "capacity_mAh_g": {"type": ["number", "null"]},
+    "capacitance_F_g": {"type": ["number", "null"]}
+  },
+  "additionalProperties": true
+}

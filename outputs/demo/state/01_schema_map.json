@@ -1,0 +1,36 @@
+{
+  "agent": "schema_agent",
+  "version": "1.0.0",
+  "summary": {
+    "n_raw_columns": 14,
+    "n_mapped_columns": 14,
+    "n_unknown_columns": 0
+  },
+  "column_map": {
+    "paper": "paper_id",
+    "Sample Name": "sample_name",
+    "precursor": "precursor",
+    "BET": "BET_m2_g",
+    "d002": "d002_nm",
+    "ID/IG": "ID_IG",
+    "N content": "XPS_N_at_pct",
+    "O content": "XPS_O_at_pct",
+    "pore volume": "pore_volume_cm3_g",
+    "loading": "mass_loading_mg_cm2",
+    "ICE": "ICE_pct",
+    "capacity": "capacity_mAh_g",
+    "current density": "current_density_A_g",
+    "source": "source_location"
+  },
+  "unknown_columns": [],
+  "missing_recommended_fields": [
+    "sample_id"
+  ],
+  "warnings": [
+    {
+      "risk_level": "P2",
+      "field": "sample_id",
+      "reason": "推荐字段缺失，建议补充以提高可追溯性"
+    }
+  ]
+}

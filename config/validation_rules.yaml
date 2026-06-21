@@ -1,0 +1,73 @@
+rules:
+  BET_m2_g:
+    hard_min: 0
+    soft_max: 4000
+    hard_max: 10000
+    unit: m2/g
+  d002_nm:
+    hard_min: 0.30
+    soft_min: 0.335
+    soft_max: 0.50
+    hard_max: 1.0
+    unit: nm
+  ID_IG:
+    hard_min: 0
+    soft_max: 3.5
+  XPS_N_at_pct:
+    hard_min: 0
+    hard_max: 100
+    soft_max: 30
+    unit: at%
+  XPS_O_at_pct:
+    hard_min: 0
+    hard_max: 100
+    soft_max: 50
+    unit: at%
+  pore_volume_cm3_g:
+    hard_min: 0
+    soft_max: 5
+    hard_max: 20
+    unit: cm3/g
+  micropore_volume_cm3_g:
+    hard_min: 0
+    soft_max: 3
+    hard_max: 10
+    unit: cm3/g
+  mass_loading_mg_cm2:
+    hard_min: 0
+    soft_min: 0.1
+    soft_max: 20
+    hard_max: 100
+    unit: mg/cm2
+  electrode_thickness_um:
+    hard_min: 0
+    soft_max: 1000
+    unit: um
+  compacted_density_g_cm3:
+    hard_min: 0
+    soft_max: 2.5
+    hard_max: 5
+    unit: g/cm3
+  ICE_pct:
+    hard_min: 0
+    hard_max: 100
+    unit: "%"
+  capacity_mAh_g:
+    hard_min: 0
+    soft_max: 2000
+    hard_max: 5000
+    unit: mAh/g
+  capacitance_F_g:
+    hard_min: 0
+    soft_max: 1000
+    hard_max: 3000
+    unit: F/g
+  current_density_A_g:
+    hard_min: 0
+    soft_max: 100
+    unit: A/g
+recommended_fields:
+  - paper_id
+  - sample_id
+  - sample_name
+  - source_location

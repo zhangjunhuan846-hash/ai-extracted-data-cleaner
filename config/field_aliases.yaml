@@ -1,0 +1,47 @@
+canonical_fields:
+  paper_id:
+    aliases: [paper, paper_id, reference, ref, doi, article_id]
+  sample_id:
+    aliases: [sample_id, sample id, id, record_id, material_id]
+  sample_name:
+    aliases: [sample, sample name, material, material name, electrode material]
+  precursor:
+    aliases: [precursor, biomass, raw material, feedstock]
+  material_type:
+    aliases: [material_type, type, category, carbon type]
+  carbonization_temperature_C:
+    aliases: [carbonization temperature, pyrolysis temperature, temperature, temp, carbonization_temp, carbonization_temperature]
+  BET_m2_g:
+    aliases: [BET, SSA, S_BET, SBET, surface area, specific surface area, BET surface area]
+  d002_nm:
+    aliases: [d002, d_002, interlayer spacing, layer spacing, interlayer distance]
+  ID_IG:
+    aliases: [ID/IG, I_D/I_G, IDIG, raman ratio, Raman ID/IG]
+  XPS_N_at_pct:
+    aliases: [N, N content, nitrogen content, N at%, XPS N, XPS_N]
+  XPS_O_at_pct:
+    aliases: [O, O content, oxygen content, O at%, XPS O, XPS_O]
+  pore_volume_cm3_g:
+    aliases: [pore volume, total pore volume, V_total, total pore volume cm3/g]
+  micropore_volume_cm3_g:
+    aliases: [micropore volume, V_micro, micropore volume cm3/g]
+  mass_loading_mg_cm2:
+    aliases: [mass loading, loading, electrode loading, active mass loading]
+  electrode_thickness_um:
+    aliases: [electrode thickness, thickness]
+  compacted_density_g_cm3:
+    aliases: [compacted density, tap density, electrode density, density]
+  ICE_pct:
+    aliases: [ICE, initial coulombic efficiency, first coulombic efficiency, initial CE, first CE]
+  capacity_mAh_g:
+    aliases: [capacity, reversible capacity, specific capacity, discharge capacity]
+  capacitance_F_g:
+    aliases: [capacitance, specific capacitance, gravimetric capacitance]
+  current_density_A_g:
+    aliases: [current density, current, rate, test current]
+  voltage_window_V:
+    aliases: [voltage window, potential window, voltage range]
+  electrolyte:
+    aliases: [electrolyte, electrolyte type]
+  source_location:
+    aliases: [source, source location, table, figure, SI, note, extraction note]
