@@ -6,3 +6,10 @@ def test_field_mapping_bet():
     assert column_map["BET"] == "BET_m2_g"
     assert column_map["Sample Name"] == "sample_name"
     assert "random_col" in unknown
+
+
+def test_field_mapping_with_unit_suffix():
+    column_map, unknown = build_column_map(["BET (m²/g)", "capacity mAh/g"])
+    assert column_map["BET (m²/g)"] == "BET_m2_g"
+    assert column_map["capacity mAh/g"] == "capacity_mAh_g"
+    assert unknown == []

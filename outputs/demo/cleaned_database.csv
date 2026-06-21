@@ -1,6 +1,0 @@
-﻿paper_id,sample_name,precursor,BET_m2_g,d002_nm,ID_IG,XPS_N_at_pct,XPS_O_at_pct,pore_volume_cm3_g,mass_loading_mg_cm2,ICE_pct,capacity_mAh_g,current_density_A_g,source_location
-P001,HC-800,coconut shell,1200.0,0.372,1.12,3.1,8.4,0.62,1.1,86.5,310.0,0.1,Table S1
-P001,HC-900,coconut shell,12300.0,0.371,1.09,2.7,7.5,0.58,1.0,105.0,335.0,0.1,Table S1
-P002,NPC-1,starch,25.0,0.389,4.2,12.0,18.0,6.5,,72.0,410.0,0.2,Figure 3
-P002,NPC-1,starch,25.0,0.389,4.2,12.0,18.0,6.5,,72.0,410.0,0.2,Figure 3
-P003,AC-SC,bamboo,1850.0,,0.98,5.0,15.0,1.1,4.5,,320.0,1.0,

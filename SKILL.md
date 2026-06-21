@@ -4,11 +4,23 @@
 
 This skill cleans, normalizes, and audits AI-extracted scientific literature datasets for chemical and materials engineering.
 
-Use this skill when the user has data extracted from papers by ChatGPT, OCR, MinerU, PDF parsers, manual curation, or mixed spreadsheets, and wants to prepare the data for database construction, review-manuscript source data, or machine-learning analysis.
+Use this skill when the user has data extracted from papers by ChatGPT, OCR, MinerU, PDF parsers, manual curation, or mixed spreadsheets, and wants to prepare the data for database construction, review-manuscript source data, correlation analysis, Bayesian-optimization replay, or machine-learning analysis.
 
 ## Chinese positioning
 
 面向化工与材料文献数据的 AI 提取结果清洗 Skill：用于字段标准化、单位统一、异常值识别、重复样本检查和二次原文核查队列生成。
+
+## Version
+
+Current package version: `1.1.0`.
+
+Important v1.1.0 behavior:
+
+- Default YAML configs are bundled inside the Python package, so the CLI works after normal installation.
+- The CLI accepts custom `--aliases` and `--rules` paths.
+- The workflow writes `cleaning_manifest.json` with version, input path, output files, flags, corrections, and decision.
+- Empty flag files retain headers for downstream scripts.
+- `mAh/g` and `Ah/g` are distinguished to avoid false capacity scaling.
 
 ## Core tasks
 
@@ -34,6 +46,7 @@ Use this skill when the user has data extracted from papers by ChatGPT, OCR, Min
 - paper_level_audit.csv
 - correction_log.csv
 - data_quality_report.md
+- cleaning_manifest.json
 - state/*.json
 
 ## Agent protocol
@@ -61,3 +74,5 @@ Do not silently overwrite suspicious values without recording the original value
 Do not remove rows unless the user explicitly asks for row deletion. Prefer flagging rows for source verification.
 
 For high-stakes research conclusions, recommend checking the original paper or SI rather than treating the cleaned value as final truth.
+
+If the cleaned data will be used for ML/BO, prioritize verification of target variables, units, duplicate samples, paper-level dominance, and missing engineering parameters.

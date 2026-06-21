@@ -1,27 +1,31 @@
 from __future__ import annotations
 
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 import yaml
 
-DEFAULT_RULES = Path(__file__).resolve().parents[2] / "config" / "validation_rules.yaml"
+
+def default_rules_path() -> Path:
+    return Path(str(resources.files("ai_extracted_data_cleaner.config") / "validation_rules.yaml"))
 
 
 def load_rules(path: str | Path | None = None) -> dict[str, Any]:
-    p = Path(path) if path else DEFAULT_RULES
-    return yaml.safe_load(p.read_text(encoding="utf-8"))
+    p = Path(path) if path else default_rules_path()
+    return yaml.safe_load(p.read_text(encoding="utf-8")) or {}
 
 
 def validate_dataframe(df: pd.DataFrame, rules_path: str | Path | None = None) -> list[dict[str, Any]]:
-    rules = load_rules(rules_path).get("rules", {})
+    config = load_rules(rules_path)
+    rules = config.get("rules", {})
     flags: list[dict[str, Any]] = []
     for idx, row in df.iterrows():
         paper_id = _val(row, "paper_id")
         sample_id = _val(row, "sample_id")
         for field, rule in rules.items():
-            if field not in df.columns or pd.isna(row.get(field)):
+            if field not in df.columns or _is_missing(row.get(field)):
                 continue
             try:
                 value = float(row.get(field))
@@ -43,21 +47,25 @@ def validate_dataframe(df: pd.DataFrame, rules_path: str | Path | None = None) -
             elif soft_max is not None and value > soft_max:
                 flags.append(_flag(idx, paper_id, sample_id, field, value, "P1", f"{field} = {value:g} {unit} above typical range {soft_max}", "建议回查原文；优先检查单位、小数点和表格行错位"))
 
-        for required in ["source_location"]:
-            if required in df.columns and (pd.isna(row.get(required)) or str(row.get(required)).strip() == ""):
-                flags.append(_flag(idx, paper_id, sample_id, required, "", "P2", "缺少来源位置，后续难以回查", "补充表号、图号、SI 页码或原文位置"))
+        for required in config.get("recommended_fields", ["source_location"]):
+            if required in df.columns and _is_missing(row.get(required)):
+                flags.append(_flag(idx, paper_id, sample_id, required, "", "P2", f"缺少 {required}，后续难以回查", "补充 DOI、表号、图号、SI 页码或原文位置"))
 
         for engineering in ["mass_loading_mg_cm2", "electrode_thickness_um", "compacted_density_g_cm3"]:
-            if engineering in df.columns and (pd.isna(row.get(engineering)) or str(row.get(engineering)).strip() == ""):
+            if engineering in df.columns and _is_missing(row.get(engineering)):
                 flags.append(_flag(idx, paper_id, sample_id, engineering, "", "P2", f"缺少 {engineering}，影响器件级可比性", "回查实验方法或电极制备部分"))
     return flags
 
 
+def _is_missing(value: Any) -> bool:
+    if pd.isna(value):
+        return True
+    return str(value).strip().lower() in {"", "nan", "none", "null", "n/a", "na", "-"}
+
+
 def _val(row: pd.Series, key: str) -> str:
     val = row.get(key, "")
-    if pd.isna(val):
-        return ""
-    return str(val)
+    return "" if _is_missing(val) else str(val)
 
 
 def _flag(row_index: int, paper_id: str, sample_id: str, field: str, value: Any, risk: str, reason: str, action: str) -> dict[str, Any]:

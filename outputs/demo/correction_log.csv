@@ -1,4 +1,0 @@
-﻿field,original_value,cleaned_value,correction_type,confidence,reason,row_index,paper_id,sample_id
-BET_m2_g,250000 cm2/g,25.0,unit_conversion,high,cm2/g converted to m2/g,2,P002,
-d002_nm,3.72 Å,0.372,unit_conversion,high,Å converted to nm,0,P001,
-current_density_A_g,100 mA/g,0.1,unit_conversion,high,mA/g converted to A/g,0,P001,

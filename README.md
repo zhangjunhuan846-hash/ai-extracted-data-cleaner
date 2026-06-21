@@ -6,9 +6,9 @@
 </p>
 
 <p align="center">
-  <img alt="status" src="https://img.shields.io/badge/status-v1.0.0-blue">
+  <img alt="status" src="https://img.shields.io/badge/status-v1.1.0-blue">
   <img alt="domain" src="https://img.shields.io/badge/domain-AI4Materials-green">
-  <img alt="workflow" src="https://img.shields.io/badge/workflow-multi--agent%20%2B%20JSON-purple">
+  <img alt="workflow" src="https://img.shields.io/badge/workflow-deterministic%20QC%20%2B%20agent%20states-purple">
   <img alt="language" src="https://img.shields.io/badge/readme-%E4%B8%AD%E6%96%87-red">
 </p>
 
@@ -26,43 +26,35 @@
 - 条件混杂：同一材料在不同倍率、不同电解液、不同循环数下被误合并。
 - 需要人工回查的样本没有被系统化列出。
 
-本 Skill 的目标不是“自动相信 AI 提取结果”，而是建立一个**可追溯的数据清洗与二次核查工作流**。
+本项目的目标不是“自动相信 AI 提取结果”，而是建立一个**可追溯的数据清洗与二次核查工作流**。所有自动单位修正都会进入 `correction_log.csv`，所有高风险样本都会进入 `secondary_review_queue.csv`。
 
 ---
 
-## 定位
+## 版本定位：v1.1.0
 
-**English**
+相比初版，v1.1.0 主要强化了 GitHub 可发布性和正式安装后的稳定性：
 
-> A local multi-agent skill for cleaning, normalizing, and auditing AI-extracted literature datasets in chemical and materials engineering.
-
-**中文**
-
-> 面向化工与材料文献数据的 AI 提取结果清洗 Skill：用于字段标准化、单位统一、异常值识别、重复样本检查和二次原文核查队列生成。
-
----
-
-## 适用场景
-
-| 场景 | 说明 |
-|---|---|
-| PDF / OCR 数据提取后清洗 | 适用于 MinerU、OCR、LLM 表格抽取后的初始 Excel / CSV。 |
-| 材料文献数据库构建 | 在进入正式数据库前，统一字段、单位和样本编号。 |
-| 综述 source data 准备 | 为 `materials-review-audit-skill` 提供更干净的数据库和回查队列。 |
-| AI4Materials 建模前质控 | 在机器学习、相关性分析、贝叶斯优化前排查异常样本。 |
-| 人工二次核查排队 | 自动生成需要回查原文或 SI 的高风险样本清单。 |
+- 清理仓库产物：不再把 `.git/`、`outputs/`、`__pycache__/`、`.pytest_cache/` 打进发布包。
+- 新增 `.gitignore`。
+- 默认 YAML 配置打包进 Python package，避免 `pip install` 后找不到 `config/*.yaml`。
+- CLI 支持自定义 `--aliases` 和 `--rules`。
+- 修正单位识别：`mAh/g` 不会被误判成 `Ah/g`。
+- 增加 `cleaning_manifest.json`，记录版本、输入、输出、flag 数、correction 数和最终决策。
+- 空 `flagged_records.csv` 也保留表头，便于后续脚本读取。
+- 增加字段映射冲突审计和更稳定的 duplicate 检测。
+- 测试扩展到 8 个用例。
 
 ---
 
 ## 核心功能
 
-### 1. Field Normalization：字段标准化
+### 1. Field normalization：字段标准化
 
 将 AI 提取出的混乱字段统一为标准材料数据库字段：
 
-| 标准字段 | 可能的原始写法 |
+| 标准字段 | 常见原始写法 |
 |---|---|
-| `BET_m2_g` | BET, SSA, S_BET, surface area |
+| `BET_m2_g` | BET, SSA, S_BET, surface area, BET area |
 | `d002_nm` | d002, interlayer spacing, layer distance |
 | `ID_IG` | ID/IG, I_D/I_G, Raman ratio |
 | `XPS_N_at_pct` | N content, N at%, nitrogen content |
@@ -73,123 +65,91 @@
 | `capacity_mAh_g` | reversible capacity, specific capacity |
 | `capacitance_F_g` | specific capacitance, gravimetric capacitance |
 
----
-
-### 2. Unit Harmonization：单位统一
-
-支持材料与电化学常见单位修正：
+字段映射结果写入：
 
 ```text
-Å -> nm
-cm²/g -> m²/g
-mA/g -> A/g
-mg/cm² -> mg cm-2
-wt% / at% 保留但标记类型
-mAh/g, F/g, A/g, mV/s, °C 标准化
+state/01_schema_map.json
 ```
 
-自动修正示例：
+如果多个原始字段映射到同一个标准字段，会在 schema state 和质量报告中标出，避免重复列被悄悄吞掉。
+
+---
+
+### 2. Unit harmonization：单位统一
+
+当前支持的典型转换：
 
 | 原始值 | 标准化后 | 说明 |
 |---|---:|---|
 | `3.72 Å` | `0.372 nm` | d002 Å 转 nm |
 | `250000 cm2/g` | `25 m2/g` | cm²/g 转 m²/g |
-| `100 mA/g` | `0.1 A/g` | 电流密度转换 |
+| `100 mA/g` | `0.1 A/g` | 电流密度 mA/g 转 A/g |
+| `0.31 Ah/g` | `310 mAh/g` | Ah/g 转 mAh/g |
+| `1073 K` | `799.85 °C` | K 转 °C |
+| `10 g/m2` | `1 mg/cm2` | 面载量 g/m² 转 mg/cm² |
 
----
-
-### 3. Physics-Aware Outlier Detection：材料物理约束异常识别
-
-不是简单用 z-score 判断异常，而是加入材料领域规则。
-
-| 字段 | 高风险规则示例 |
-|---|---|
-| BET | `< 0` 或 `> 4000 m²/g` 标记为高风险 |
-| d002 | `< 0.335 nm` 或 `> 0.50 nm` 标记为可疑 |
-| ICE | `< 0` 或 `> 100%` 标记为 P0 |
-| capacity | `< 0` 或过高值标记为 P0/P1 |
-| capacitance | `< 0` 或异常高值标记为 P0/P1 |
-| ID/IG | `< 0` 或 `> 3.5` 标记为需要核查 |
-| mass loading | 缺失时标记为工程外推风险 |
-
----
-
-### 4. Duplicate / Near-Duplicate Detection：重复样本排查
-
-识别以下问题：
-
-- 同一 `paper_id + sample_name` 重复出现。
-- 样品名略有差异但关键性能完全一致。
-- 同一材料不同倍率下被误当作独立材料样本。
-- 旧版 Excel 和新版 Excel 合并时残留重复记录。
-
----
-
-### 5. Secondary Review Queue：二次原文核查队列
-
-输出 `secondary_review_queue.csv`，明确告诉你哪些样本必须回查论文或 SI。
-
-| sample_id | field | risk_level | reason | required_action |
-|---|---|---|---|---|
-| SIB-032-4 | BET_m2_g | P1 | BET = 12300 m²/g, physically implausible | Check original figure/table/SI |
-| LIB-011-2 | ICE_pct | P0 | ICE = 105%, exceeds 100% | Verify extraction or correct source value |
-| SC-018-1 | mass_loading_mg_cm2 | P2 | Missing mass loading | Check electrode methods section |
-
----
-
-### 6. Correction Log：可追溯修改日志
-
-任何自动修正都会写入：
+所有自动修正都会写入：
 
 ```text
 correction_log.csv
 ```
 
-包含：
+---
 
-```text
-sample_id
-field
-original_value
-cleaned_value
-correction_type
-confidence
-reason
-```
+### 3. Physics-aware validation：物理约束异常识别
+
+不是简单做 z-score，而是结合材料领域规则判断异常：
+
+| 字段 | 风险规则示例 |
+|---|---|
+| `BET_m2_g` | `<0` 或 `>10000` 为 P0；`>4000` 为 P1 |
+| `d002_nm` | `<0.30` 或 `>1.0` 为 P0；典型范围外为 P1 |
+| `ICE_pct` | `<0` 或 `>100` 为 P0 |
+| `capacity_mAh_g` | `<0` 或 `>5000` 为 P0；`>2000` 为 P1 |
+| `capacitance_F_g` | `<0` 或 `>3000` 为 P0；`>1000` 为 P1 |
+| `ID_IG` | `<0` 为 P0；`>3.5` 为 P1 |
+| 工程参数 | mass loading / thickness / density 缺失时标记为 P2 |
+
+规则可通过 `config/validation_rules.yaml` 修改。
 
 ---
 
-## 多 Agent 工作流
+### 4. Duplicate / near-duplicate detection：重复样本排查
 
-本 Skill 支持“脚本基线 + 多 Agent 审计协议”。脚本负责可重复的数据规则，Agent 负责解释、仲裁和生成二次核查建议。
+识别以下问题：
 
-```mermaid
-flowchart TD
-    A[AI / OCR / PDF parser extracted table] --> B[01 Schema Agent]
-    B --> C[state/01_schema_map.json]
-    C --> D[02 Unit Agent]
-    D --> E[state/02_unit_normalized.json]
-    E --> F[03 Physics Agent]
-    F --> G[state/03_physics_flags.json]
-    G --> H[04 Duplicate Agent]
-    H --> I[state/04_duplicate_flags.json]
-    I --> J[05 Review Queue Agent]
-    J --> K[secondary_review_queue.csv]
-    J --> L[cleaned_database.csv]
-    J --> M[data_quality_report.md]
+- `sample_id` 重复。
+- 同一 `paper_id + sample_name` 重复。
+- 关键描述符、测试条件和性能值完全重复。
+- 旧版 Excel 与新版 Excel 合并时残留重复记录。
+
+重复样本不会被自动删除，而是进入二次核查队列。
+
+---
+
+### 5. Secondary review queue：二次原文核查队列
+
+输出：
+
+```text
+secondary_review_queue.csv
 ```
+
+示例字段：
+
+| sample_id | field | risk_level | reason | required_action |
+|---|---|---|---|---|
+| SIB-032-4 | BET_m2_g | P1 | BET above typical range | Check original figure/table/SI |
+| LIB-011-2 | ICE_pct | P0 | ICE exceeds 100% | Verify extraction or correct source value |
+| SC-018-1 | mass_loading_mg_cm2 | P2 | Missing mass loading | Check electrode methods section |
 
 ---
 
 ## 输入文件
 
-推荐输入为 `.xlsx` 或 `.csv`：
+支持 `.csv`、`.txt`、`.xlsx`、`.xls`。
 
-```text
-data/extracted/my_ai_extracted_data.xlsx
-```
-
-至少建议包含这些列中的一部分：
+建议至少包含这些列中的一部分：
 
 ```text
 paper_id
@@ -213,7 +173,7 @@ electrolyte
 source_location
 ```
 
-不要求完全一致，Skill 会尝试自动映射字段。
+列名不要求完全一致，工具会根据 `field_aliases.yaml` 自动映射。
 
 ---
 
@@ -227,6 +187,7 @@ source_location
 | `paper_level_audit.csv` | 按论文聚合的风险统计。 |
 | `correction_log.csv` | 自动修正和单位转换记录。 |
 | `data_quality_report.md` | 中文数据质量报告，可直接放入审计记录。 |
+| `cleaning_manifest.json` | 本次清洗运行摘要、版本、决策和输出清单。 |
 | `state/*.json` | 多 Agent 传递用中间态，减少 token 消耗。 |
 
 ---
@@ -236,6 +197,12 @@ source_location
 ```bash
 pip install -r requirements.txt
 pip install -e .
+```
+
+开发测试：
+
+```bash
+pytest -q
 ```
 
 ---
@@ -248,6 +215,24 @@ pip install -e .
 python -m ai_extracted_data_cleaner.cli clean \
   --input examples/input/raw_ai_extracted_samples.csv \
   --outdir outputs/demo
+```
+
+也可以使用安装后的 console script：
+
+```bash
+ai-extracted-data-cleaner clean \
+  --input examples/input/raw_ai_extracted_samples.csv \
+  --outdir outputs/demo
+```
+
+使用自定义字段别名和验证规则：
+
+```bash
+ai-extracted-data-cleaner clean \
+  --input data/my_ai_extracted_data.xlsx \
+  --outdir outputs/my_cleaned_data \
+  --aliases config/field_aliases.yaml \
+  --rules config/validation_rules.yaml
 ```
 
 ### 方式二：脚本
@@ -268,72 +253,35 @@ python scripts/clean_ai_extracted_data.py \
 skills/ai-extracted-data-cleaner/
 ```
 
-然后在 Codex / OpenClaw 中使用类似提示：
+然后使用类似提示：
 
 ```text
 Use the ai-extracted-data-cleaner skill. Clean data/extracted/my_ai_extracted_data.xlsx.
 Focus on materials literature descriptors, unit harmonization, physically implausible values, duplicate samples, and samples requiring second-round source verification.
 Use JSON state files to pass intermediate results between agents.
+Do not silently delete rows; generate a secondary review queue.
 ```
 
 ---
 
-## 推荐与其他 Skill 串联
+## 多 Agent 工作流
+
+脚本负责可重复的数据规则，Agent 负责解释、仲裁和生成二次核查建议。
 
 ```mermaid
-flowchart LR
-    A[ai-extracted-data-cleaner] --> B[materials-review-audit-skill]
-    B --> C[offline-bo-materials-skill]
-    C --> D[hard-carbon-atomistic-model-builder]
-```
-
-建议定位：
-
-| Skill | 角色 |
-|---|---|
-| `ai-extracted-data-cleaner` | 上游数据清洗和二次核查排队。 |
-| `materials-review-audit-skill` | 综述正文、图表、source_data、Excel 数据库一致性审计。 |
-| `offline-bo-materials-skill` | 基于清洗后数据库做离线贝叶斯优化模拟。 |
-| `hard-carbon-atomistic-model-builder` | 构建 DFT / MLFF / ASE 输入结构。 |
-
----
-
-## 项目结构
-
-```text
-ai-extracted-data-cleaner/
-├── README.md
-├── skill.md
-├── AGENTS.md
-├── requirements.txt
-├── pyproject.toml
-├── config/
-│   ├── field_aliases.yaml
-│   └── validation_rules.yaml
-├── schemas/
-│   ├── cleaned_record.schema.json
-│   ├── flag_record.schema.json
-│   └── agent_state.schema.json
-├── prompts/
-│   ├── 01_schema_agent.md
-│   ├── 02_unit_agent.md
-│   ├── 03_physics_agent.md
-│   ├── 04_duplicate_agent.md
-│   └── 05_review_queue_agent.md
-├── scripts/
-│   └── clean_ai_extracted_data.py
-├── src/ai_extracted_data_cleaner/
-│   ├── cli.py
-│   ├── cleaner.py
-│   ├── fields.py
-│   ├── units.py
-│   ├── validators.py
-│   ├── duplicates.py
-│   ├── report.py
-│   └── utils.py
-├── examples/
-│   └── input/raw_ai_extracted_samples.csv
-└── tests/
+flowchart TD
+    A[AI / OCR / PDF parser extracted table] --> B[01 Schema Agent]
+    B --> C[state/01_schema_map.json]
+    C --> D[02 Unit Agent]
+    D --> E[state/02_unit_normalized.json]
+    E --> F[03 Physics Agent]
+    F --> G[state/03_physics_flags.json]
+    G --> H[04 Duplicate Agent]
+    H --> I[state/04_duplicate_flags.json]
+    I --> J[05 Review Queue Agent]
+    J --> K[secondary_review_queue.csv]
+    J --> L[cleaned_database.csv]
+    J --> M[data_quality_report.md]
 ```
 
 ---
@@ -348,12 +296,33 @@ ai-extracted-data-cleaner/
 
 ---
 
+## 推荐与其他 Skill 串联
+
+```mermaid
+flowchart LR
+    A[ai-extracted-data-cleaner] --> B[materials-review-audit-skill]
+    B --> C[carbon-literature-bo-replay-skill]
+    C --> D[hard-carbon-atomistic-model-builder]
+```
+
+建议定位：
+
+| Skill | 角色 |
+|---|---|
+| `ai-extracted-data-cleaner` | 上游数据清洗和二次核查排队。 |
+| `materials-review-audit-skill` | 综述正文、图表、source_data、Excel 数据库一致性审计。 |
+| `carbon-literature-bo-replay-skill` | 基于清洗后数据库做离线贝叶斯优化 replay。 |
+| `hard-carbon-atomistic-model-builder` | 构建 DFT / MLFF / ASE 输入结构。 |
+
+---
+
 ## 当前限制
 
-- 本 Skill 不会替代人工阅读原文。
+- 本 Skill 不替代人工阅读原文。
 - 对图像型 PDF 表格的识别依赖上游 OCR / Parser。
 - 对材料体系的判断依赖字段和上下文，不能保证所有边界情况完全正确。
-- 对单位的自动修正会记录到 `correction_log.csv`，高风险修正仍建议回查原文。
+- 自动单位修正虽然会记录到 `correction_log.csv`，但高影响、低置信修正仍建议回查原文。
+- 对“同一材料不同测试条件”的判断需要结合倍率、循环数、电解液和电压窗口，不能只看样品名。
 
 ---
 

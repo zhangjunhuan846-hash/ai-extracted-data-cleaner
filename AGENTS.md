@@ -4,6 +4,8 @@ This file defines the recommended multi-agent workflow for `ai-extracted-data-cl
 
 ## Principle
 
+Current workflow version: `1.1.0`.
+
 The dataset may be large. Do not pass the entire spreadsheet to every agent. Instead, produce compact JSON state files that contain only the information required for the next audit step.
 
 ## Agent 01: Schema Agent
@@ -77,6 +79,7 @@ The dataset may be large. Do not pass the entire spreadsheet to every agent. Ins
 - secondary_review_queue.csv
 - paper_level_audit.csv
 - data_quality_report.md
+- cleaning_manifest.json
 
 **Responsibilities**
 - Prioritize samples requiring original-paper verification.
