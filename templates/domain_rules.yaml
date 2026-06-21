@@ -1,0 +1,141 @@
+profile: biomass_carbon_energy_storage
+notes: >
+  Conservative default rules for biomass-derived carbon materials in LIB/SIB/aqueous supercapacitors.
+  These are screening rules, not proof of error. Values outside warning ranges should be manually checked.
+
+canonical_fields:
+  identifiers:
+    - paper_id
+    - doi
+    - title
+    - year
+    - sample_id
+    - sample_name
+  material:
+    - precursor
+    - biomass_source
+    - activation_method
+    - carbonization_temp_C
+    - carbonization_time_h
+  structure:
+    - BET_m2_g
+    - total_pore_volume_cm3_g
+    - micropore_volume_cm3_g
+    - d002_nm
+    - ID_IG
+    - N_at_percent
+    - O_at_percent
+    - ash_wt_percent
+  testing:
+    - system
+    - electrolyte
+    - voltage_window
+    - current_density
+    - mass_loading_mg_cm2
+    - electrode_thickness_um
+    - compaction_density_g_cm3
+  performance:
+    - ICE_percent
+    - reversible_capacity_mAh_g
+    - specific_capacitance_F_g
+    - retention_percent
+    - cycle_number
+
+ranges:
+  carbonization_temp_C:
+    impossible_min: 100
+    warning_min: 300
+    warning_max: 1300
+    impossible_max: 2500
+  BET_m2_g:
+    impossible_min: 0
+    warning_min: 1
+    warning_max: 3500
+    impossible_max: 5000
+  total_pore_volume_cm3_g:
+    impossible_min: 0
+    warning_max: 3.0
+    impossible_max: 6.0
+  micropore_volume_cm3_g:
+    impossible_min: 0
+    warning_max: 2.0
+    impossible_max: 5.0
+  d002_nm:
+    impossible_min: 0.30
+    warning_min: 0.335
+    warning_max: 0.430
+    impossible_max: 0.80
+  ID_IG:
+    impossible_min: 0
+    warning_min: 0.2
+    warning_max: 2.5
+    impossible_max: 5.0
+  N_at_percent:
+    impossible_min: 0
+    warning_max: 15
+    impossible_max: 40
+  O_at_percent:
+    impossible_min: 0
+    warning_max: 35
+    impossible_max: 60
+  ash_wt_percent:
+    impossible_min: 0
+    warning_max: 40
+    impossible_max: 100
+  ICE_percent:
+    impossible_min: 0
+    warning_min: 20
+    warning_max: 100
+    impossible_max: 120
+  reversible_capacity_mAh_g:
+    impossible_min: 0
+    warning_max: 1500
+    impossible_max: 3000
+  specific_capacitance_F_g:
+    impossible_min: 0
+    warning_max: 800
+    impossible_max: 1500
+  retention_percent:
+    impossible_min: 0
+    warning_max: 120
+    impossible_max: 200
+  mass_loading_mg_cm2:
+    impossible_min: 0
+    warning_min: 0.1
+    warning_max: 20
+    impossible_max: 100
+  electrode_thickness_um:
+    impossible_min: 0
+    warning_min: 5
+    warning_max: 500
+    impossible_max: 5000
+  compaction_density_g_cm3:
+    impossible_min: 0
+    warning_min: 0.05
+    warning_max: 2.0
+    impossible_max: 5.0
+
+system_required_fields:
+  LIB:
+    - electrolyte
+    - current_density
+    - voltage_window
+    - ICE_percent
+  SIB:
+    - electrolyte
+    - current_density
+    - voltage_window
+    - ICE_percent
+  SC_AQUEOUS:
+    - electrolyte
+    - current_density
+    - voltage_window
+    - specific_capacitance_F_g
+
+non_mixing_rules:
+  - Do not pool LIB, SIB, and aqueous SC performance targets.
+  - Do not pool ester and ether SIB electrolytes for ICE without subgroup or sensitivity analysis.
+  - Do not compare capacitance measured at different current densities without recording current density.
+  - Do not compare capacity without voltage window and current density.
+  - Do not treat BET as equivalent to ion-accessible surface area.
+  - Do not treat mass-normalized performance as device-level performance without mass loading, thickness, and density.

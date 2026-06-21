@@ -1,0 +1,26 @@
+canonical_field,accepted_aliases,unit,description,required_for_main_analysis
+paper_id,"paper,ref,reference,article_id",,Unique paper identifier,yes
+doi,"DOI,doi_url",,Digital object identifier,recommended
+title,"paper_title,article_title",,Paper title,recommended
+year,"publication_year,pub_year",,Publication year,recommended
+sample_id,"sample,record_id,material_id",,Unique row/sample identifier,yes
+sample_name,"material,sample_label,carbon_name",,Reported sample name,yes
+system,"application,device,battery_type",,LIB/SIB/SC_AQUEOUS,yes
+electrolyte,"electrolyte_solution",,Electrolyte and solvent/salt details,yes
+carbonization_temp_C,"carbonization temperature,pyrolysis temp,temp,T",°C,Carbonization/pyrolysis temperature,recommended
+BET_m2_g,"BET,SSA,specific surface area,surface area",m2/g,BET specific surface area,recommended
+total_pore_volume_cm3_g,"total pore volume,pore volume,Vtot",cm3/g,Total pore volume,optional
+micropore_volume_cm3_g,"micropore volume,Vmic",cm3/g,Micropore volume,optional
+d002_nm,"d002,d-spacing,interlayer spacing",nm,Interlayer spacing from XRD,recommended
+ID_IG,"ID/IG,Raman ratio,D/G",ratio,Raman D/G intensity ratio,recommended
+N_at_percent,"N content,N at%,nitrogen",at.%,XPS nitrogen atomic percent,optional
+O_at_percent,"O content,O at%,oxygen",at.%,XPS oxygen atomic percent,optional
+mass_loading_mg_cm2,"mass loading,loading",mg/cm2,Active material mass loading,recommended
+ICE_percent,"ICE,initial coulombic efficiency,first-cycle CE",%,First-cycle initial coulombic efficiency,target-dependent
+reversible_capacity_mAh_g,"capacity,specific capacity,initial reversible capacity",mAh/g,Specific capacity,target-dependent
+specific_capacitance_F_g,"capacitance,specific capacitance,Csp",F/g,Specific capacitance,target-dependent
+retention_percent,"retention,capacity retention,capacitance retention",%,Cycling retention,target-dependent
+source_page,"page,pages",,Page where value was extracted,recommended
+source_table,"table,figure",,Table/figure identifier,recommended
+source_text,"evidence,quote,extracted sentence",,Raw evidence text,recommended
+ai_confidence,"confidence,extraction_confidence",0-1,AI extraction confidence,optional
